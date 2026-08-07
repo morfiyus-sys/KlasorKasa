@@ -63,4 +63,8 @@ powershell -ExecutionPolicy Bypass -File scripts/Publish-Release.ps1
 
 Güvenlik bildirimi için [SECURITY.md](SECURITY.md) dosyasına bakın.
 
+## Lisans
+
+KlasörKasa, [MIT Lisansı](LICENSE) ile yayımlanmaktadır.
+
 © 2026 ERDSoft. Ürün adı: KlasörKasa.

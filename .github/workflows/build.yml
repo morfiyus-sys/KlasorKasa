@@ -1,0 +1,42 @@
+name: Windows Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore KlasorKasa.sln
+
+      - name: Build
+        run: dotnet build KlasorKasa.sln -c Release -p:Platform=x64 --no-restore
+
+      - name: Test security scenarios
+        run: dotnet run --project KlasorKasa.Tests/KlasorKasa.Tests.csproj -c Release -p:Platform=x64 --no-build
+
+      - name: Publish self-contained single file
+        run: dotnet publish KlasorKasa.csproj -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true -p:Platform=x64 -p:PublishTrimmed=false -p:DebugType=none -p:DebugSymbols=false -o artifacts/publish
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: KlasorKasa-win-x64
+          path: artifacts/publish/KlasorKasa.exe
+          if-no-files-found: error

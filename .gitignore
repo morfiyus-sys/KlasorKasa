@@ -1,0 +1,39 @@
+# Build outputs
+bin/
+obj/
+artifacts/
+dist/
+TestResults/
+
+# Visual Studio / VS Code / Rider
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# OS and temporary files
+Thumbs.db
+Desktop.ini
+*.tmp
+*.temp
+*.log
+
+# Signing material and secrets
+*.pfx
+*.p12
+*.snk
+*.key
+*.pem
+secrets.json
+appsettings.*.local.json
+
+# KlasörKasa runtime data must never enter source control
+profile.json
+settings.json
+Vaults/
+Working/
+AclBackups/
+Logs/

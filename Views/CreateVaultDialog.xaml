@@ -1,0 +1,62 @@
+<Window x:Class="KlasorKasa.Views.CreateVaultDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Yeni Kasa Oluştur" Width="590" SizeToContent="Height" MinHeight="440"
+        ResizeMode="NoResize" WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+  <Border Style="{StaticResource CardStyle}" Margin="20" Padding="26">
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+
+      <StackPanel>
+        <TextBlock Text="Yeni Kasa Oluştur" Style="{StaticResource PageTitleText}" />
+        <TextBlock Text="Korunacak klasörü seçin. Kasa adı klasör adından otomatik oluşturulur."
+                   Style="{StaticResource SecondaryText}" Margin="0,6,0,0" />
+      </StackPanel>
+
+      <StackPanel Grid.Row="1" Margin="0,22,0,0">
+        <TextBlock Text="Korunacak Klasör" Margin="0,0,0,6" />
+        <Grid>
+          <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+          <TextBox Text="{Binding FolderPath}" IsReadOnly="True" ToolTip="Gözat düğmesiyle klasör seçin" />
+          <Button Grid.Column="1" Content="Gözat…" Style="{StaticResource SecondaryButton}"
+                  Command="{Binding BrowseCommand}" Margin="8,0,0,0" MinWidth="92" />
+        </Grid>
+      </StackPanel>
+
+      <Border Grid.Row="2" Background="#E8F3FA" BorderBrush="{StaticResource BorderBrush}"
+              BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,14,0,0">
+        <Grid>
+          <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+          <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets" Foreground="{StaticResource PrimaryAccentBrush}"
+                     FontSize="17" VerticalAlignment="Center" Margin="0,0,10,0" />
+          <StackPanel Grid.Column="1">
+            <TextBlock Text="Seçilen kasa" Style="{StaticResource SecondaryText}" FontSize="11" />
+            <TextBlock Text="{Binding Name, TargetNullValue=Henüz klasör seçilmedi}"
+                       FontWeight="SemiBold" Margin="0,2,0,0" />
+          </StackPanel>
+        </Grid>
+      </Border>
+
+      <TextBlock Grid.Row="3" Text="Bu klasör şifrelenecek ve diğer Windows kullanıcılarının erişimine kapatılacaktır."
+                 Style="{StaticResource SecondaryText}" Margin="0,12,0,0" />
+      <TextBlock Grid.Row="4" Text="{Binding ErrorMessage}" Foreground="{StaticResource DangerBrush}"
+                 Margin="0,8,0,0" TextWrapping="Wrap" />
+
+      <Border Grid.Row="5" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0" Margin="0,18,0,0" Padding="0,16,0,0">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+          <Button Content="İPTAL" Style="{StaticResource SecondaryButton}" Command="{Binding CancelCommand}"
+                  MinWidth="96" IsCancel="True" />
+          <Button Content="DEVAM" Style="{StaticResource PrimaryButton}" Command="{Binding CreateCommand}"
+                  IsEnabled="{Binding HasSelection}" Margin="8,0,0,0" MinWidth="128" IsDefault="True" />
+        </StackPanel>
+      </Border>
+    </Grid>
+  </Border>
+</Window>

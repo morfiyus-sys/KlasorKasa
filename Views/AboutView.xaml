@@ -1,0 +1,22 @@
+<UserControl x:Class="KlasorKasa.Views.AboutView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <Grid Margin="34,28">
+      <Border Style="{StaticResource CardStyle}" MaxWidth="720" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="34">
+        <Grid>
+          <Grid.ColumnDefinitions><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+          <Image Width="128" Height="128" VerticalAlignment="Top" HorizontalAlignment="Left" Stretch="Uniform">
+            <Image.Source><BitmapImage UriSource="/KlasorKasa;component/Assets/Brand/KlasorKasaMark.png" DecodePixelWidth="256" CacheOption="OnLoad"/></Image.Source>
+          </Image>
+          <StackPanel Grid.Column="1" Margin="8,2,0,0">
+            <TextBlock Text="KlasörKasa" Style="{StaticResource DisplayText}"/><TextBlock Text="by ERDSoft" Style="{StaticResource SecondaryText}"/>
+            <TextBlock Margin="0,20,0,0" Text="Dosyalarınızı yalnızca saklamaz; görünmezken de okunamaz halde tutar." FontSize="16" TextWrapping="Wrap"/>
+            <TextBlock Margin="0,18,0,0" Style="{StaticResource SecondaryText}" Text="KlasörKasa; AES-256-GCM şifreleme, parola tabanlı anahtar koruması, Windows kullanıcı doğrulaması ve NTFS erişim denetimini birlikte kullanır."/>
+            <TextBlock Margin="0,18,0,0"><Run Text="Sürüm "/><Run Text="{Binding Version}"/></TextBlock><TextBlock Text="© 2026 ERDSoft" Style="{StaticResource SecondaryText}" Margin="0,6,0,0"/>
+          </StackPanel>
+        </Grid>
+      </Border>
+    </Grid>
+  </ScrollViewer>
+</UserControl>

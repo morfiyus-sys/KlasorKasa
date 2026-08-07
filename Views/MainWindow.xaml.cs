@@ -13,6 +13,11 @@ public partial class MainWindow : Window
         InitializeComponent(); DataContext = _vm = vm;
         vm.SessionLocked += (_, _) => Dispatcher.Invoke(ShowLoginAfterAutoLock);
         vm.SafeExitRequested += (_, _) => Dispatcher.Invoke(() => { _forceSafeExit = true; Close(); });
+        vm.AccountDeleted += (_, _) => Dispatcher.Invoke(() =>
+        {
+            _allowClose = true;
+            Application.Current.Shutdown();
+        });
     }
     private void Window_Activity(object sender, InputEventArgs e) => _vm.NotifyActivity();
     private async void Window_Closing(object? sender, CancelEventArgs e)

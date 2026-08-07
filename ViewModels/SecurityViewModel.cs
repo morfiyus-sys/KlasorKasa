@@ -1,6 +1,7 @@
 using System.Windows.Input;
 using KlasorKasa.Infrastructure;
 using KlasorKasa.Services;
+using KlasorKasa.Views;
 
 namespace KlasorKasa.ViewModels;
 
@@ -21,12 +22,15 @@ public sealed class SecurityViewModel : ObservableObject
     public string WindowsAccount => _services.Identity.CurrentAccount;
     public ICommand ChangePasswordCommand { get; }
     public ICommand CreateRecoveryCommand { get; }
+    public ICommand DeleteAccountCommand { get; }
+    public event EventHandler? AccountDeleted;
 
     public SecurityViewModel(AppServices services)
     {
         _services = services;
         ChangePasswordCommand = new AsyncRelayCommand(ChangePasswordAsync);
         CreateRecoveryCommand = new AsyncRelayCommand(CreateRecoveryAsync);
+        DeleteAccountCommand = new RelayCommand(OpenDeleteAccountDialog);
         _ = LoadStatusAsync();
     }
 
@@ -74,5 +78,14 @@ public sealed class SecurityViewModel : ObservableObject
             "Kurtarma anahtarı panoya kopyalandı. Bu anahtarı güvenli bir yerde saklayın; program anahtarı tekrar gösteremez.\n\n" + key,
             "Kurtarma Anahtarı", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
         await _services.Recovery.ConfirmRecoveryKeySavedAsync();
+    }
+
+    private void OpenDeleteAccountDialog()
+    {
+        var dialog = new DeleteAccountDialog(new DeleteAccountViewModel(_services.AccountDeletion))
+        {
+            Owner = System.Windows.Application.Current.MainWindow
+        };
+        if (dialog.ShowDialog() == true) AccountDeleted?.Invoke(this, EventArgs.Empty);
     }
 }

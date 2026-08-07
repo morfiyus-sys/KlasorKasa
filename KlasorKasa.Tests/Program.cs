@@ -21,6 +21,9 @@ var tests = new List<(string Name, Func<Task> Run)>
 tests.Add(("Beş yanlış giriş kalıcı bir dakikalık kilit oluşturur", TestPersistentLoginLockout));
 tests.Add(("Kurtarma anahtarıyla parola kasaları yeniden şifrelemeden yenilenir", TestRecoveryPasswordReset));
 tests.Add(("Geçersiz kurtarma anahtarı reddedilir", TestInvalidRecoveryKey));
+tests.Add(("Hesabı sil tüm kasaları korumasız geri getirir", TestDeleteAccountRestoresAllVaults));
+tests.Add(("Hesabı sil yanlış parolada hiçbir veriyi değiştirmez", TestDeleteAccountRejectsWrongPassword));
+tests.Add(("Hesabı sil yol çakışmasında veri kaybını önler", TestDeleteAccountStopsOnPathConflict));
 
 var passed = 0;
 foreach (var test in tests)
@@ -297,6 +300,89 @@ static async Task TestInvalidRecoveryKey()
     });
 }
 
+static async Task TestDeleteAccountRestoresAllVaults()
+{
+    var root = NewTemp();
+    var dataRoot = Path.Combine(root, "appdata");
+    var lockedSource = Path.Combine(root, "kilitli");
+    var openSource = Path.Combine(root, "acik");
+    try
+    {
+        var services = new AppServices(dataRoot);
+        await services.Authentication.CreatePasswordAsync("Guclu-Parola-2026!");
+        Directory.CreateDirectory(lockedSource);
+        Directory.CreateDirectory(openSource);
+        await File.WriteAllTextAsync(Path.Combine(lockedSource, "kilitli.txt"), "kilitli içerik");
+        await File.WriteAllTextAsync(Path.Combine(openSource, "acik.txt"), "ilk içerik");
+
+        await services.FolderProtection.ProtectFolder("Kilitli", lockedSource);
+        var openVault = await services.FolderProtection.ProtectFolder("Açık", openSource);
+        await services.FolderProtection.UnlockFolder(openVault.Id);
+        await File.WriteAllTextAsync(Path.Combine(openSource, "acik.txt"), "güncel içerik");
+
+        var result = await services.AccountDeletion.DeleteAccountAsync("Guclu-Parola-2026!");
+
+        Assert(result.RestoredVaultCount == 2, "Geri getirilen kasa sayısı yanlış.");
+        Assert(result.CleanupComplete, "Hesap veri klasörü tam temizlenmedi.");
+        Assert(await File.ReadAllTextAsync(Path.Combine(lockedSource, "kilitli.txt")) == "kilitli içerik", "Kilitli kasa geri getirilmedi.");
+        Assert(await File.ReadAllTextAsync(Path.Combine(openSource, "acik.txt")) == "güncel içerik", "Açık kasadaki değişiklik korunmadı.");
+        Assert(!Directory.Exists(dataRoot), "Hesap veri klasörü silinmedi.");
+        Assert(!services.Session.IsUnlocked, "Master Key bellekten temizlenmedi.");
+
+        var restarted = new AppServices(dataRoot);
+        Assert(!restarted.Authentication.IsConfigured, "Uygulama eski hesabı yeniden hatırladı.");
+    }
+    finally { Cleanup(root); }
+}
+
+static async Task TestDeleteAccountRejectsWrongPassword()
+{
+    var root = NewTemp();
+    var dataRoot = Path.Combine(root, "appdata");
+    var source = Path.Combine(root, "kaynak");
+    try
+    {
+        var services = new AppServices(dataRoot);
+        await services.Authentication.CreatePasswordAsync("Guclu-Parola-2026!");
+        Directory.CreateDirectory(source);
+        await File.WriteAllTextAsync(Path.Combine(source, "belge.txt"), "korunan içerik");
+        var vault = await services.FolderProtection.ProtectFolder("Kasa", source);
+
+        await AssertThrowsAsync<AccountDeletionPasswordException>(() => services.AccountDeletion.DeleteAccountAsync("Yanlis-Parola!"));
+
+        Assert(services.Authentication.IsConfigured, "Yanlış parolada profil silindi.");
+        Assert(!Directory.Exists(source), "Yanlış parolada kasa açıldı.");
+        Assert(Directory.Exists(Path.Combine(services.Paths.Vaults, vault.Id.ToString("N"))), "Yanlış parolada şifreli kasa silindi.");
+    }
+    finally { Cleanup(root); Cleanup(source); }
+}
+
+static async Task TestDeleteAccountStopsOnPathConflict()
+{
+    var root = NewTemp();
+    var dataRoot = Path.Combine(root, "appdata");
+    var source = Path.Combine(root, "cakisma");
+    try
+    {
+        var services = new AppServices(dataRoot);
+        await services.Authentication.CreatePasswordAsync("Guclu-Parola-2026!");
+        Directory.CreateDirectory(source);
+        await File.WriteAllTextAsync(Path.Combine(source, "asli.txt"), "asıl kasa verisi");
+        var vault = await services.FolderProtection.ProtectFolder("Çakışma", source);
+
+        Directory.CreateDirectory(source);
+        await File.WriteAllTextAsync(Path.Combine(source, "yeni.txt"), "sonradan oluşan veri");
+
+        await AssertThrowsAsync<IOException>(() => services.AccountDeletion.DeleteAccountAsync("Guclu-Parola-2026!"));
+
+        Assert(services.Authentication.IsConfigured, "Çakışmada profil silindi.");
+        Assert(await File.ReadAllTextAsync(Path.Combine(source, "yeni.txt")) == "sonradan oluşan veri", "Çakışan klasör değiştirildi.");
+        Assert(Directory.Exists(Path.Combine(services.Paths.Vaults, vault.Id.ToString("N"))), "Çakışmada şifreli kasa silindi.");
+        Assert((await services.Vaults.GetVaultsAsync()).Any(v => v.Id == vault.Id), "Çakışmada kasa kaydı silindi.");
+    }
+    finally { Cleanup(root); Cleanup(source); }
+}
+
 static async Task WithServices(Func<AppServices, Task> action)
 {
     var root = NewTemp();
@@ -307,3 +393,4 @@ static string NewTemp() { var p = Path.Combine(Path.GetTempPath(), "KlasorKasaTe
 static void Cleanup(string path) { if (!Directory.Exists(path)) return; try { foreach (var f in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories)) File.SetAttributes(f, FileAttributes.Normal); Directory.Delete(path, true); } catch { } }
 static void Assert(bool condition, string message) { if (!condition) throw new InvalidOperationException(message); }
 static void AssertThrows<T>(Action action) where T : Exception { try { action(); throw new InvalidOperationException($"{typeof(T).Name} bekleniyordu."); } catch (T) { } }
+static async Task AssertThrowsAsync<T>(Func<Task> action) where T : Exception { try { await action(); throw new InvalidOperationException($"{typeof(T).Name} bekleniyordu."); } catch (T) { } }

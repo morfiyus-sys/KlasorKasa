@@ -38,5 +38,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: KlasorKasa-win-x64
-          path: artifacts/publish/KlasorKasa.exe
+          path: |
+            artifacts/publish/KlasorKasa.exe
+            LICENSE
+            README.md
+            RELEASE_NOTES.md
           if-no-files-found: error

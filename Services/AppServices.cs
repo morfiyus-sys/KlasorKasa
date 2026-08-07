@@ -19,6 +19,7 @@ public sealed class AppServices
     public FolderProtectionService FolderProtection { get; }
     public RecoveryKeyService Recovery { get; }
     public AutoLockService AutoLock { get; }
+    public AccountDeletionService AccountDeletion { get; }
 
     public AppServices(string? dataRoot = null, TimeSpan? loginLockoutDuration = null)
     {
@@ -37,6 +38,7 @@ public sealed class AppServices
         FolderProtection = new FolderProtectionService(Vaults, SystemFolderGuard, Logging);
         Recovery = new RecoveryKeyService(Paths, Authentication, Encryption, KeyDerivation, Session, Logging);
         AutoLock = new AutoLockService(Settings, Vaults, FolderProtection, Session, Logging);
+        AccountDeletion = new AccountDeletionService(Paths, Authentication, Vaults, FolderProtection, Settings, Session, AutoLock, Logging);
         Settings.LoadAsync().GetAwaiter().GetResult();
     }
 }

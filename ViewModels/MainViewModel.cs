@@ -19,6 +19,7 @@ public sealed class MainViewModel : ObservableObject
     public ICommand NavigateCommand { get; }
     public event EventHandler? SessionLocked;
     public event EventHandler? SafeExitRequested;
+    public event EventHandler? AccountDeleted;
     public ICommand SafeExitCommand { get; }
 
     public MainViewModel(AppServices services)
@@ -27,6 +28,7 @@ public sealed class MainViewModel : ObservableObject
         Vaults = new VaultsViewModel(services);
         Security = new SecurityViewModel(services);
         Settings = new SettingsViewModel(services.Settings);
+        Security.AccountDeleted += (_, _) => AccountDeleted?.Invoke(this, EventArgs.Empty);
         _currentViewModel = Home;
         NavigateCommand = new RelayCommand<string>(Navigate);
         SafeExitCommand = new RelayCommand(() => SafeExitRequested?.Invoke(this, EventArgs.Empty));
@@ -68,5 +70,5 @@ public sealed class MainViewModel : ObservableObject
 
 public sealed class AboutViewModel
 {
-    public string Version { get; set; } = typeof(AboutViewModel).Assembly.GetName().Version?.ToString(3) ?? "1.0.0";
+    public string Version { get; set; } = typeof(AboutViewModel).Assembly.GetName().Version?.ToString(3) ?? "1.1.0";
 }

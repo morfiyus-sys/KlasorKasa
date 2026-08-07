@@ -30,4 +30,10 @@ public sealed class SettingsService(AppPaths paths, LoggingService logging)
         else runKey.DeleteValue("KlasorKasa", false);
         logging.Log("SettingsSave", result: "Success");
     }
+
+    public void RemoveStartupRegistration()
+    {
+        using var runKey = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run", true);
+        runKey?.DeleteValue("KlasorKasa", false);
+    }
 }

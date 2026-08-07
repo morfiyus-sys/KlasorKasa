@@ -189,6 +189,8 @@ public sealed class VaultService(
                 var item = await GetIndexItemAsync(id, key);
                 EnsureOwner(item);
                 var metadata = await LoadMetadataAsync(id, key);
+                if (item.State == VaultState.Locked && Directory.Exists(item.OriginalPath))
+                    throw new IOException("Kilitli kasanın özgün yolunda başka bir klasör bulundu. Veri kaybını önlemek için koruma kaldırılamadı.");
                 if (!Directory.Exists(item.OriginalPath))
                 {
                     var stage = CreateWorkingStage(item.OriginalPath, "restore");

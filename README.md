@@ -35,6 +35,12 @@ Yayın paketi self-contained olduğundan ayrıca .NET kurulumu gerekmez.
 
 Kurtarma anahtarı ve ana parola birlikte kaybedilirse şifreli dosyalar kurtarılamaz.
 
+### Hesabı silme
+
+**Güvenlik → Hesabı Sil** işlemi ana parolayı yeniden doğrular. Önce tüm kasaların korumasını kaldırarak klasörleri özgün konumlarında normal kullanıma açar. Tek bir kasa bile güvenli biçimde geri getirilemezse hesap profili silinmez. Başarılı işlemden sonra Master Key bellekten temizlenir; profil, kurtarma bilgisi, ayarlar, günlükler, kasa kayıtları ve Windows başlangıç kaydı kaldırılır. Sonraki açılışta ilk kurulum ekranı gösterilir.
+
+Uygulama yerel hesap dosyalarını silmeden önce üzerlerine yazmayı dener. SSD aşınma dengelemesi ve dosya sistemi davranışı nedeniyle adli veri kurtarmaya karşı fiziksel silme garantisi verilemez.
+
 ## Kaynaktan derleme
 
 ```powershell
@@ -60,6 +66,7 @@ powershell -ExecutionPolicy Bypass -File scripts/Publish-Release.ps1
 - Açık kasada plaintext dosyalar çalışma klasöründe bulunur ve NTFS ACL ile sınırlandırılır. Açık kasa kullanılmadığında kilitlenmelidir.
 - Yönetici hesapları şifreli blobları bulabilir, sahiplik alabilir ve kopyalayabilir; içerik güvenliği kriptografiye dayanır.
 - E-posta ile parola kurtarma yoktur; çevrimdışı kurtarma anahtarı kullanılır.
+- SSD üzerinde silinen hesap dosyalarının fiziksel olarak geri getirilemez olduğu garanti edilemez; uygulama düzeyinde profil ve anahtar erişimi kaldırılır.
 
 Güvenlik bildirimi için [SECURITY.md](SECURITY.md) dosyasına bakın.
 

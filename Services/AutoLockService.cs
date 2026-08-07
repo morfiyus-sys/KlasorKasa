@@ -8,6 +8,7 @@ public sealed class AutoLockService(SettingsService settings, VaultService vault
     private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromSeconds(15) };
     private DateTime _lastActivityUtc = DateTime.UtcNow;
     private bool _busy;
+    public bool IsRunning => _timer.IsEnabled;
     public event EventHandler? Locked;
 
     public void Start()

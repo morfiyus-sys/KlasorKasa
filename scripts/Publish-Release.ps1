@@ -33,6 +33,7 @@ try {
 
     Copy-Item -LiteralPath README.md -Destination (Join-Path $publishRoot "README.md")
     Copy-Item -LiteralPath RELEASE_NOTES.md -Destination (Join-Path $publishRoot "RELEASE_NOTES.md")
+    Copy-Item -LiteralPath LICENSE -Destination (Join-Path $publishRoot "LICENSE")
 
     if (Test-Path -LiteralPath $archivePath) { Remove-Item -LiteralPath $archivePath -Force }
     Compress-Archive -Path (Join-Path $publishRoot "*") -DestinationPath $archivePath -CompressionLevel Optimal
